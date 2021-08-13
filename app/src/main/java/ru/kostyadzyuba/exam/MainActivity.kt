@@ -16,27 +16,42 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.json.JSONArray
+import java.io.File
 
 class MainActivity : AppCompatActivity(),
     View.OnClickListener,
     DialogInterface.OnClickListener,
     DialogInterface.OnShowListener {
 
-    private var testsAdapter =
-        TestsAdapter(mutableListOf("Entrance test", "Semester test", "Course test"))
+    private lateinit var testsAdapter: TestsAdapter
     private lateinit var testTitleDialog: AlertDialog
     private lateinit var testTitleText: EditText
     private lateinit var positiveButton: Button
+    private lateinit var saveFile: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        saveFile = File(filesDir, "tests.json")
+        testsAdapter = TestsAdapter(
+            if (saveFile.exists()) {
+                val array = JSONArray(saveFile.readText())
+                MutableList(array.length(), array::getString)
+            } else {
+                mutableListOf()
+            }
+        )
         val tests = findViewById<RecyclerView>(R.id.tests)
         tests.adapter = testsAdapter
         attachSwipe(tests)
         val add = findViewById<FloatingActionButton>(R.id.add)
         add.setOnClickListener(this)
         initDialog()
+    }
+
+    private fun saveTests() {
+        saveFile.writeText(JSONArray(testsAdapter.testList).toString(4))
     }
 
     private fun attachSwipe(recyclerView: RecyclerView) {
@@ -55,6 +70,7 @@ class MainActivity : AppCompatActivity(),
                 val position = viewHolder.adapterPosition
                 testsAdapter.testList.removeAt(position)
                 testsAdapter.notifyItemRemoved(position)
+                saveTests()
             }
         }).attachToRecyclerView(recyclerView)
     }
@@ -114,6 +130,7 @@ class MainActivity : AppCompatActivity(),
         testsAdapter.testList.add(testTitleText.text.toString())
         testsAdapter.notifyItemInserted(testsAdapter.testList.size - 1)
         testTitleText.text.clear()
+        saveTests()
     }
 
     override fun onShow(dialog: DialogInterface) {
