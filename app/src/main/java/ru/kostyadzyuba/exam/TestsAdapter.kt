@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class TestsAdapter(private val testList: Array<String>) :
+class TestsAdapter(val testList: MutableList<String>) :
     RecyclerView.Adapter<TestsAdapter.TestViewHolder>() {
     class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
