@@ -1,6 +1,7 @@
 package ru.kostyadzyuba.exam
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.Menu
@@ -141,14 +142,21 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onClick(dialog: DialogInterface, which: Int) {
-        testsAdapter.testList.add(testTitleText.text.toString())
-        testsAdapter.notifyItemInserted(testsAdapter.testList.size - 1)
-        testTitleText.text.clear()
-        updateUi()
+        startActivityForResult(Intent(this, QuestionsActivity::class.java), 0)
     }
 
     override fun onShow(dialog: DialogInterface) {
         positiveButton = (dialog as AlertDialog).getButton(DialogInterface.BUTTON_POSITIVE)
         positiveButton.isEnabled = false
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            testsAdapter.testList.add(testTitleText.text.toString())
+            testsAdapter.notifyItemInserted(testsAdapter.testList.size - 1)
+            testTitleText.text.clear()
+            updateUi()
+        }
     }
 }
