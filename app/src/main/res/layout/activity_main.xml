@@ -12,6 +12,14 @@
         android:layout_height="match_parent"
         app:layoutManager="LinearLayoutManager" />
 
+    <TextView
+        android:id="@+id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No tests"
+        android:textAppearance="?android:textAppearanceLarge" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add"
         android:layout_width="wrap_content"

@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -29,10 +30,24 @@ class MainActivity : AppCompatActivity(),
     private lateinit var testTitleText: EditText
     private lateinit var positiveButton: Button
     private lateinit var saveFile: File
+    private lateinit var emptyView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        loadTests()
+        emptyView = findViewById(R.id.empty)
+        findViewById<RecyclerView>(R.id.tests).apply {
+            adapter = testsAdapter
+            attachSwipe(this)
+        }
+        findViewById<FloatingActionButton>(R.id.add)
+            .setOnClickListener(this)
+        initDialog()
+        updateUi(false)
+    }
+
+    private fun loadTests() {
         saveFile = File(filesDir, "tests.json")
         testsAdapter = TestsAdapter(
             if (saveFile.exists()) {
@@ -42,16 +57,15 @@ class MainActivity : AppCompatActivity(),
                 mutableListOf()
             }
         )
-        val tests = findViewById<RecyclerView>(R.id.tests)
-        tests.adapter = testsAdapter
-        attachSwipe(tests)
-        val add = findViewById<FloatingActionButton>(R.id.add)
-        add.setOnClickListener(this)
-        initDialog()
     }
 
-    private fun saveTests() {
-        saveFile.writeText(JSONArray(testsAdapter.testList).toString(4))
+    private fun updateUi(save: Boolean = true) {
+        if (save) {
+            val jsonArray = JSONArray(testsAdapter.testList)
+            saveFile.writeText(jsonArray.toString(4))
+        }
+        emptyView.visibility = if (testsAdapter.itemCount != 0)
+            View.INVISIBLE else View.VISIBLE
     }
 
     private fun attachSwipe(recyclerView: RecyclerView) {
@@ -70,7 +84,7 @@ class MainActivity : AppCompatActivity(),
                 val position = viewHolder.adapterPosition
                 testsAdapter.testList.removeAt(position)
                 testsAdapter.notifyItemRemoved(position)
-                saveTests()
+                updateUi()
             }
         }).attachToRecyclerView(recyclerView)
     }
@@ -130,7 +144,7 @@ class MainActivity : AppCompatActivity(),
         testsAdapter.testList.add(testTitleText.text.toString())
         testsAdapter.notifyItemInserted(testsAdapter.testList.size - 1)
         testTitleText.text.clear()
-        saveTests()
+        updateUi()
     }
 
     override fun onShow(dialog: DialogInterface) {
