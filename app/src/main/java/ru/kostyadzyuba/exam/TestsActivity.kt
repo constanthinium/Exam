@@ -21,7 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.io.File
 
-class MainActivity : AppCompatActivity(),
+class TestsActivity : AppCompatActivity(),
     View.OnClickListener,
     DialogInterface.OnClickListener,
     DialogInterface.OnShowListener {
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_tests)
         loadTests()
         emptyView = findViewById(R.id.empty)
         findViewById<RecyclerView>(R.id.tests).apply {
@@ -52,8 +52,8 @@ class MainActivity : AppCompatActivity(),
         saveFile = File(filesDir, "tests.json")
         testsAdapter = TestsAdapter(
             if (saveFile.exists()) {
-                val array = JSONArray(saveFile.readText())
-                MutableList(array.length(), array::getString)
+                val jsonArray = JSONArray(saveFile.readText())
+                MutableList(jsonArray.length(), jsonArray::getString)
             } else {
                 mutableListOf()
             }
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun updateUi(save: Boolean = true) {
         if (save) {
-            val jsonArray = JSONArray(testsAdapter.testList)
+            val jsonArray = JSONArray(testsAdapter.tests)
             saveFile.writeText(jsonArray.toString(4))
         }
         emptyView.visibility = if (testsAdapter.itemCount != 0)
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity(),
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                testsAdapter.testList.removeAt(position)
+                testsAdapter.tests.removeAt(position)
                 testsAdapter.notifyItemRemoved(position)
                 updateUi()
             }
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(),
             .setNegativeButton("Cancel", null)
             .create().apply {
                 window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-                setOnShowListener(this@MainActivity)
+                setOnShowListener(this@TestsActivity)
             }
     }
 
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
-            testsAdapter.testList.add(testTitleText.text.toString())
+            testsAdapter.tests.add(testTitleText.text.toString())
             testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
             testTitleText.text.clear()
             updateUi()

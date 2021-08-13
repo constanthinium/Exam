@@ -13,7 +13,7 @@
             android:name=".QuestionsActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".TestsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

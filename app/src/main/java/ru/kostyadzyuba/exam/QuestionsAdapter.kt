@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 
-class QuestionsAdapter(val questionsList: MutableList<Pair<String, String>>) :
+class QuestionsAdapter(val questions: MutableList<Pair<String, String>>) :
     RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolder>() {
 
     class QuestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,10 +27,10 @@ class QuestionsAdapter(val questionsList: MutableList<Pair<String, String>>) :
     }
 
     override fun onBindViewHolder(holder: QuestionViewHolder, position: Int) {
-        holder.bind(questionsList[position])
+        holder.bind(questions[position])
     }
 
     override fun getItemCount(): Int {
-        return questionsList.size
+        return questions.size
     }
 }

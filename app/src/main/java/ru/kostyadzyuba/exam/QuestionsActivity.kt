@@ -26,7 +26,7 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.add -> {
-                questionsAdapter.questionsList.add(Pair("", ""))
+                questionsAdapter.questions.add(Pair("", ""))
                 questionsAdapter.notifyItemInserted(questionsAdapter.itemCount - 1)
             }
             else -> throw IllegalArgumentException("View.id")

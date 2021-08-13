@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class TestsAdapter(val testList: MutableList<String>) :
+class TestsAdapter(val tests: MutableList<String>) :
     RecyclerView.Adapter<TestsAdapter.TestViewHolder>() {
     class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -22,10 +22,10 @@ class TestsAdapter(val testList: MutableList<String>) :
     }
 
     override fun onBindViewHolder(holder: TestViewHolder, position: Int) {
-        holder.bind(testList[position])
+        holder.bind(tests[position])
     }
 
     override fun getItemCount(): Int {
-        return testList.size
+        return tests.size
     }
 }
