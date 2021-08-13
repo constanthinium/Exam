@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity(),
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             testsAdapter.testList.add(testTitleText.text.toString())
-            testsAdapter.notifyItemInserted(testsAdapter.testList.size - 1)
+            testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
             testTitleText.text.clear()
             updateUi()
         }
