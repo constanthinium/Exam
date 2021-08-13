@@ -13,6 +13,7 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -32,9 +33,30 @@ class MainActivity : AppCompatActivity(),
         setContentView(R.layout.activity_main)
         val tests = findViewById<RecyclerView>(R.id.tests)
         tests.adapter = testsAdapter
+        attachSwipe(tests)
         val add = findViewById<FloatingActionButton>(R.id.add)
         add.setOnClickListener(this)
         initDialog()
+    }
+
+    private fun attachSwipe(recyclerView: RecyclerView) {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                testsAdapter.testList.removeAt(position)
+                testsAdapter.notifyItemRemoved(position)
+            }
+        }).attachToRecyclerView(recyclerView)
     }
 
     private fun initDialog() {
