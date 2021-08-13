@@ -5,11 +5,14 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val tests = findViewById<RecyclerView>(R.id.tests)
+        tests.adapter = TestsAdapter(arrayOf("Entrance test", "Semester test", "Course test"))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
