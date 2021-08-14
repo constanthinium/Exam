@@ -148,6 +148,7 @@ class TestsActivity : AppCompatActivity(),
     override fun onShow(dialog: DialogInterface) {
         positiveButton = (dialog as AlertDialog).getButton(DialogInterface.BUTTON_POSITIVE)
         positiveButton.isEnabled = false
+        testTitleText.text.clear()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

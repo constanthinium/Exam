@@ -8,13 +8,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="Question" />
+        android:hint="Question"
+        android:inputType="textCapSentences" />
 
     <EditText
         android:id="@+id/answer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="Answer" />
+        android:hint="Answer"
+        android:inputType="textCapSentences" />
 
 </LinearLayout>
