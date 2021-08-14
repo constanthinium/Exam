@@ -6,9 +6,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 
-class QuestionsAdapter(val questions: MutableList<Pair<String, String>>) :
-    RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolder>() {
-
+class QuestionsAdapter : RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolder>() {
     class QuestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val questionEditText = itemView.findViewById<EditText>(R.id.question)
@@ -19,6 +17,8 @@ class QuestionsAdapter(val questions: MutableList<Pair<String, String>>) :
             answerEditText.setText(question.second)
         }
     }
+
+    val questions = ArrayList<Pair<String, String>>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuestionViewHolder {
         val view = LayoutInflater.from(parent.context)

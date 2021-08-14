@@ -1,6 +1,7 @@
 package ru.kostyadzyuba.exam
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,8 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_questions)
-        questionsAdapter = QuestionsAdapter(mutableListOf("" to ""))
+        questionsAdapter = QuestionsAdapter()
+        questionsAdapter.questions.add("" to "")
         findViewById<RecyclerView>(R.id.questions).adapter = questionsAdapter
         findViewById<FloatingActionButton>(R.id.add).setOnClickListener(this)
         save = findViewById(R.id.save)
@@ -31,7 +33,9 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
                 ObjectAnimator.ofFloat(save, "translationY", oldPos, 1f).start()
             }
             R.id.save -> {
-                setResult(RESULT_OK)
+                val intent = Intent()
+                    .putExtra("questions", questionsAdapter.questions)
+                setResult(RESULT_OK, intent)
                 finish()
             }
             else -> throw IllegalArgumentException("View.id")
