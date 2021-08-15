@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 
 class TestsActivity : AppCompatActivity(),
@@ -27,8 +29,8 @@ class TestsActivity : AppCompatActivity(),
     DialogInterface.OnShowListener {
 
     private lateinit var testsAdapter: TestsAdapter
-    private lateinit var testTitleDialog: AlertDialog
-    private lateinit var testTitleText: EditText
+    private lateinit var testNameDialog: AlertDialog
+    private lateinit var testNameText: EditText
     private lateinit var positiveButton: Button
     private lateinit var saveFile: File
     private lateinit var emptyView: TextView
@@ -36,7 +38,8 @@ class TestsActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tests)
-        loadTests()
+        saveFile = File(filesDir, "tests.json")
+        testsAdapter = TestsAdapter(loadOrCreate())
         emptyView = findViewById(R.id.empty)
         findViewById<RecyclerView>(R.id.tests).apply {
             adapter = testsAdapter
@@ -45,28 +48,60 @@ class TestsActivity : AppCompatActivity(),
         findViewById<FloatingActionButton>(R.id.add)
             .setOnClickListener(this)
         initDialog()
-        updateUi(false)
+        updateUiAndSave(true)
     }
 
-    private fun loadTests() {
-        saveFile = File(filesDir, "tests.json")
-        testsAdapter = TestsAdapter(
-            if (saveFile.exists()) {
-                val jsonArray = JSONArray(saveFile.readText())
-                MutableList(jsonArray.length(), jsonArray::getString)
-            } else {
-                mutableListOf()
+    private fun loadOrCreate(): MutableList<Test> {
+        if (!saveFile.exists()) {
+            return mutableListOf()
+        } else {
+            val jsonString = saveFile.readText()
+            val testsJsonObject = JSONObject(jsonString)
+            val testsJson = testsJsonObject.getJSONArray("tests")
+            val tests = mutableListOf<Test>()
+            for (testIndex in 0 until testsJson.length()) {
+                val testJson = testsJson.getJSONObject(testIndex)
+                val questionsJson = testJson.getJSONArray("questions")
+                val questionsCount = questionsJson.length()
+                val test = Test(testJson.getString("name"), ArrayList(questionsCount))
+                for (questionIndex in 0 until questionsCount) {
+                    val questionJson = questionsJson.getJSONObject(questionIndex)
+                    val question = QuestionAndAnswer(
+                        questionJson.getString("question"),
+                        questionJson.getString("answer")
+                    )
+                    test.questions.add(question)
+                }
+                tests.add(test)
             }
-        )
+            return tests
+        }
     }
 
-    private fun updateUi(save: Boolean = true) {
-        if (save) {
-            val jsonArray = JSONArray(testsAdapter.tests)
-            saveFile.writeText(jsonArray.toString(4))
-        }
+    private fun updateUiAndSave(disableSave: Boolean = false) {
         emptyView.visibility = if (testsAdapter.itemCount != 0)
             View.INVISIBLE else View.VISIBLE
+
+        if (!disableSave) {
+            val testsJson = JSONArray()
+            for (test in testsAdapter.tests) {
+                val testJson = JSONObject()
+                testJson.put("name", test.name)
+                val questionsJson = JSONArray()
+                for (question in test.questions) {
+                    val questionJson = JSONObject()
+                    questionJson.put("question", question.question)
+                    questionJson.put("answer", question.answer)
+                    questionsJson.put(questionJson)
+                }
+                testJson.put("questions", questionsJson)
+                testsJson.put(testJson)
+            }
+            val outputObject = JSONObject()
+            outputObject.put("tests", testsJson)
+            val jsonString = outputObject.toString(4)
+            saveFile.writeText(jsonString)
+        }
     }
 
     private fun attachSwipe(recyclerView: RecyclerView) {
@@ -85,27 +120,27 @@ class TestsActivity : AppCompatActivity(),
                 val position = viewHolder.adapterPosition
                 testsAdapter.tests.removeAt(position)
                 testsAdapter.notifyItemRemoved(position)
-                updateUi()
+                updateUiAndSave()
             }
         }).attachToRecyclerView(recyclerView)
     }
 
     private fun initDialog() {
-        testTitleText = EditText(this).apply {
+        testNameText = EditText(this).apply {
             inputType = InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-            hint = "Test title"
+            hint = "Test name"
             requestFocus()
             doAfterTextChanged {
                 positiveButton.isEnabled = !it.isNullOrBlank()
             }
         }
 
-        testTitleDialog = AlertDialog.Builder(this)
-            .setTitle("Enter Test Title")
+        testNameDialog = AlertDialog.Builder(this)
+            .setTitle("Enter Test Name")
             .setView(FrameLayout(this).apply {
                 val margin = resources.getDimension(R.dimen.dialog_margin).toInt()
                 setPadding(margin, 0, margin, 0)
-                addView(testTitleText)
+                addView(testNameText)
             })
             .setPositiveButton("OK", this)
             .setNegativeButton("Cancel", null)
@@ -136,7 +171,7 @@ class TestsActivity : AppCompatActivity(),
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.add -> testTitleDialog.show()
+            R.id.add -> testNameDialog.show()
             else -> throw IllegalArgumentException("View.id")
         }
     }
@@ -148,16 +183,18 @@ class TestsActivity : AppCompatActivity(),
     override fun onShow(dialog: DialogInterface) {
         positiveButton = (dialog as AlertDialog).getButton(DialogInterface.BUTTON_POSITIVE)
         positiveButton.isEnabled = false
-        testTitleText.text.clear()
+        testNameText.text.clear()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
-            testsAdapter.tests.add(testTitleText.text.toString())
+            val questions =
+                data!!.getSerializableExtra(QuestionsActivity.EXTRA_QUESTIONS)!! as ArrayList<QuestionAndAnswer>
+            testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
             testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
-            testTitleText.text.clear()
-            updateUi()
+            testNameText.text.clear()
+            updateUiAndSave()
         }
     }
 }

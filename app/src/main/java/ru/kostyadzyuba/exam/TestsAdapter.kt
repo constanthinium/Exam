@@ -6,12 +6,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class TestsAdapter(val tests: MutableList<String>) :
+class TestsAdapter(val tests: MutableList<Test>) :
     RecyclerView.Adapter<TestsAdapter.TestViewHolder>() {
     class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bind(test: String) {
-            (itemView as TextView).text = test
+        fun bind(test: Test) {
+            (itemView as TextView).text = test.name
         }
     }
 
