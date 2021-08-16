@@ -8,7 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class TestsAdapter(
     val tests: MutableList<Test>,
-    private val longClickListener: View.OnLongClickListener
+    private val clickListener: View.OnClickListener,
+    private val longClickListener: View.OnLongClickListener,
 ) :
     RecyclerView.Adapter<TestsAdapter.TestViewHolder>() {
     class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -20,6 +21,7 @@ class TestsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TestViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(android.R.layout.simple_selectable_list_item, parent, false)
+        view.setOnClickListener(clickListener)
         view.setOnLongClickListener(longClickListener)
         return TestViewHolder(view)
     }

@@ -10,4 +10,6 @@ class Test(
 class QuestionAndAnswer(
     var question: String,
     var answer: String
-) : Serializable
+) : Serializable {
+    override fun toString() = "$question - $answer"
+}

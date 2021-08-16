@@ -8,10 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -37,7 +34,7 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tests)
         save = File(filesDir, "tests.json")
-        testsAdapter = TestsAdapter(loadOrCreate(), this)
+        testsAdapter = TestsAdapter(loadOrCreate(), this, this)
         emptyView = findViewById(R.id.empty)
         recyclerView = findViewById<RecyclerView>(R.id.tests).apply {
             adapter = testsAdapter
@@ -170,7 +167,13 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
     override fun onClick(view: View) {
         when (view.id) {
             R.id.add -> testNameDialog.show()
-            else -> throw IllegalArgumentException("View.id")
+            else -> {
+                val test = testsAdapter.tests[recyclerView.getChildAdapterPosition(view)]
+                startActivity(
+                    Intent(this, PassTestActivity::class.java)
+                        .putExtra(Keys.QUESTIONS, test.questions)
+                )
+            }
         }
     }
 
@@ -205,10 +208,11 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
     override fun onLongClick(view: View): Boolean {
         val position = recyclerView.getChildAdapterPosition(view)
         val test = testsAdapter.tests[position]
-        val intent = Intent(this, QuestionsActivity::class.java)
-            .putExtra(Keys.TEST, test)
-            .putExtra(Keys.INDEX, position)
-        startActivityForResult(intent, 0)
+        startActivityForResult(
+            Intent(this, QuestionsActivity::class.java)
+                .putExtra(Keys.TEST, test)
+                .putExtra(Keys.INDEX, position), 0
+        )
         return true
     }
 }
