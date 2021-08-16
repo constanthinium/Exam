@@ -17,7 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterface.OnClickListener,
-    TextView.OnEditorActionListener {
+    TextView.OnEditorActionListener, DialogInterface.OnCancelListener {
 
     private lateinit var questions: ArrayList<QuestionAndAnswer>
     private lateinit var answerEditText: EditText
@@ -78,7 +78,7 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
                 .setTitle("Test passed!")
                 .setMessage("Score: ${score}/${questions.size}")
                 .setNegativeButton("Back", this)
-                .setCancelable(false)
+                .setOnCancelListener(this)
             if (score != questions.size) {
                 dialog.setPositiveButton("Error correction", this)
             }
@@ -102,5 +102,9 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
         } else {
             false
         }
+    }
+
+    override fun onCancel(dialog: DialogInterface?) {
+        finish()
     }
 }
