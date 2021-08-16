@@ -4,7 +4,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -23,25 +22,24 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
-class TestsActivity : AppCompatActivity(),
-    View.OnClickListener,
-    DialogInterface.OnClickListener,
-    DialogInterface.OnShowListener {
+class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener,
+    DialogInterface.OnClickListener, DialogInterface.OnShowListener {
 
     private lateinit var testsAdapter: TestsAdapter
     private lateinit var testNameDialog: AlertDialog
     private lateinit var testNameText: EditText
     private lateinit var positiveButton: Button
-    private lateinit var saveFile: File
+    private lateinit var save: File
     private lateinit var emptyView: TextView
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tests)
-        saveFile = File(filesDir, "tests.json")
-        testsAdapter = TestsAdapter(loadOrCreate())
+        save = File(filesDir, "tests.json")
+        testsAdapter = TestsAdapter(loadOrCreate(), this)
         emptyView = findViewById(R.id.empty)
-        findViewById<RecyclerView>(R.id.tests).apply {
+        recyclerView = findViewById<RecyclerView>(R.id.tests).apply {
             adapter = testsAdapter
             attachSwipe(this)
         }
@@ -52,10 +50,10 @@ class TestsActivity : AppCompatActivity(),
     }
 
     private fun loadOrCreate(): MutableList<Test> {
-        if (!saveFile.exists()) {
+        if (!save.exists()) {
             return mutableListOf()
         } else {
-            val jsonString = saveFile.readText()
+            val jsonString = save.readText()
             val testsJsonObject = JSONObject(jsonString)
             val testsJson = testsJsonObject.getJSONArray("tests")
             val tests = mutableListOf<Test>()
@@ -100,7 +98,7 @@ class TestsActivity : AppCompatActivity(),
             val outputObject = JSONObject()
             outputObject.put("tests", testsJson)
             val jsonString = outputObject.toString(4)
-            saveFile.writeText(jsonString)
+            save.writeText(jsonString)
         }
     }
 
@@ -189,12 +187,28 @@ class TestsActivity : AppCompatActivity(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
+            data as Intent
             val questions =
-                data!!.getSerializableExtra(QuestionsActivity.EXTRA_QUESTIONS)!! as ArrayList<QuestionAndAnswer>
-            testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
-            testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
-            testNameText.text.clear()
+                data.getSerializableExtra(Keys.QUESTIONS)!! as ArrayList<QuestionAndAnswer>
+            val testIndex = data.getIntExtra(Keys.INDEX, -1)
+            if (testIndex == -1) {
+                testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
+                testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
+                testNameText.text.clear()
+            } else {
+                testsAdapter.tests[testIndex].questions = questions
+            }
             updateUiAndSave()
         }
+    }
+
+    override fun onLongClick(view: View): Boolean {
+        val position = recyclerView.getChildAdapterPosition(view)
+        val test = testsAdapter.tests[position]
+        val intent = Intent(this, QuestionsActivity::class.java)
+            .putExtra(Keys.TEST, test)
+            .putExtra(Keys.INDEX, position)
+        startActivityForResult(intent, 0)
+        return true
     }
 }

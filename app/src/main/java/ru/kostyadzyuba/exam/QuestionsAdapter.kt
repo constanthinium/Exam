@@ -7,7 +7,8 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class QuestionsAdapter : RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolder>() {
+class QuestionsAdapter(val questions: ArrayList<QuestionAndAnswer>) :
+    RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolder>() {
     inner class QuestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
         View.OnFocusChangeListener {
 
@@ -35,7 +36,11 @@ class QuestionsAdapter : RecyclerView.Adapter<QuestionsAdapter.QuestionViewHolde
         }
     }
 
-    val questions = ArrayList<QuestionAndAnswer>()
+    init {
+        if (questions.isEmpty()) {
+            questions.add(QuestionAndAnswer("", ""))
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuestionViewHolder {
         val view = LayoutInflater.from(parent.context)

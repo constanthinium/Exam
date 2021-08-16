@@ -12,12 +12,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var questionsAdapter: QuestionsAdapter
     private lateinit var save: FloatingActionButton
+    private var currentTest: Test? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_questions)
-        questionsAdapter = QuestionsAdapter()
-        questionsAdapter.questions.add(QuestionAndAnswer("", ""))
+        questionsAdapter = intent.extras?.let {
+            currentTest = it.getSerializable(Keys.TEST) as Test
+            QuestionsAdapter(currentTest!!.questions)
+        } ?: QuestionsAdapter(ArrayList())
         findViewById<RecyclerView>(R.id.questions).adapter = questionsAdapter
         findViewById<FloatingActionButton>(R.id.add).setOnClickListener(this)
         save = findViewById(R.id.save)
@@ -35,15 +38,14 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
             R.id.save -> {
                 currentFocus?.clearFocus()
                 val intent = Intent()
-                    .putExtra(EXTRA_QUESTIONS, questionsAdapter.questions)
+                    .putExtra(Keys.QUESTIONS, questionsAdapter.questions)
+                intent.extras?.let {
+                    intent.putExtra(Keys.INDEX, it.getInt(Keys.INDEX))
+                }
                 setResult(RESULT_OK, intent)
                 finish()
             }
             else -> throw IllegalArgumentException("View.id")
         }
-    }
-
-    companion object {
-        const val EXTRA_QUESTIONS = "questions"
     }
 }

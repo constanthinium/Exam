@@ -4,8 +4,8 @@ import java.io.Serializable
 
 class Test(
     val name: String,
-    val questions: ArrayList<QuestionAndAnswer>
-)
+    var questions: ArrayList<QuestionAndAnswer>
+) : Serializable
 
 class QuestionAndAnswer(
     var question: String,
