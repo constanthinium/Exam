@@ -22,12 +22,14 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
     private lateinit var questions: ArrayList<QuestionAndAnswer>
     private lateinit var answerEditText: EditText
     private lateinit var vibrator: Vibrator
-    private lateinit var vibration: VibrationEffect
     private lateinit var questionTextView: TextView
     private lateinit var testName: String
 
     private lateinit var correctPlayer: MediaPlayer
     private lateinit var incorrectPlayer: MediaPlayer
+
+    private lateinit var correctVibration: VibrationEffect
+    private lateinit var incorrectVibration: VibrationEffect
 
     private var currentQuestionIndex = 0
     private var score = 0
@@ -48,7 +50,8 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
         correctPlayer = MediaPlayer.create(this, R.raw.correct)
         incorrectPlayer = MediaPlayer.create(this, R.raw.incorrect)
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
-        vibration = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+        correctVibration = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+        incorrectVibration = VibrationEffect.createWaveform(longArrayOf(0, 100, 100, 100), -1)
     }
 
     override fun onClick(v: View?) {
@@ -60,15 +63,16 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
             ) {
                 score++
                 correctPlayer.start()
+                vibrator.vibrate(correctVibration)
                 "Answer is correct!"
             } else {
                 incorrectQuestions.add(currentQuestion)
                 incorrectPlayer.start()
+                vibrator.vibrate(incorrectVibration)
                 "Answer is incorrect!"
             },
             Toast.LENGTH_SHORT
         ).show()
-        vibrator.vibrate(vibration)
         answerEditText.text.clear()
 
         if (++currentQuestionIndex != questions.size) {
@@ -88,9 +92,11 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
 
     override fun onClick(dialog: DialogInterface?, which: Int) {
         if (which == DialogInterface.BUTTON_POSITIVE) {
-            setResult(RESULT_OK, Intent()
-                .putExtra(Keys.NAME, testName)
-                .putExtra(Keys.QUESTIONS, incorrectQuestions))
+            setResult(
+                RESULT_OK, Intent()
+                    .putExtra(Keys.NAME, testName)
+                    .putExtra(Keys.QUESTIONS, incorrectQuestions)
+            )
         }
         finish()
     }
