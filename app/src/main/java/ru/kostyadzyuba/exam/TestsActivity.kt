@@ -19,6 +19,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
+private const val REQUEST_QUESTIONS = 0
+private const val REQUEST_PASS = 1
+
 class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener,
     DialogInterface.OnClickListener, DialogInterface.OnShowListener {
 
@@ -169,16 +172,17 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
             R.id.add -> testNameDialog.show()
             else -> {
                 val test = testsAdapter.tests[recyclerView.getChildAdapterPosition(view)]
-                startActivity(
+                startActivityForResult(
                     Intent(this, PassTestActivity::class.java)
-                        .putExtra(Keys.QUESTIONS, test.questions)
+                        .putExtra(Keys.NAME, test.name)
+                        .putExtra(Keys.QUESTIONS, test.questions), REQUEST_PASS
                 )
             }
         }
     }
 
     override fun onClick(dialog: DialogInterface, which: Int) {
-        startActivityForResult(Intent(this, QuestionsActivity::class.java), 0)
+        startActivityForResult(Intent(this, QuestionsActivity::class.java), REQUEST_QUESTIONS)
     }
 
     override fun onShow(dialog: DialogInterface) {
@@ -191,15 +195,24 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             data as Intent
-            val questions =
-                data.getSerializableExtra(Keys.QUESTIONS)!! as ArrayList<QuestionAndAnswer>
-            val testIndex = data.getIntExtra(Keys.INDEX, -1)
-            if (testIndex == -1) {
-                testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
-                testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
-                testNameText.text.clear()
-            } else {
-                testsAdapter.tests[testIndex].questions = questions
+            if (requestCode == REQUEST_QUESTIONS) {
+                val questions =
+                    data.getSerializableExtra(Keys.QUESTIONS)!! as ArrayList<QuestionAndAnswer>
+                val testIndex = data.getIntExtra(Keys.INDEX, -1)
+                if (testIndex == -1) {
+                    testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
+                    testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
+                    testNameText.text.clear()
+                } else {
+                    testsAdapter.tests[testIndex].questions = questions
+                }
+            } else if (requestCode == REQUEST_PASS) {
+                testsAdapter.tests.add(
+                    Test(
+                        "Error correction: ${data.getStringExtra(Keys.NAME)}",
+                        data.getSerializableExtra(Keys.QUESTIONS) as ArrayList<QuestionAndAnswer>
+                    )
+                )
             }
             updateUiAndSave()
         }
@@ -211,7 +224,7 @@ class TestsActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClic
         startActivityForResult(
             Intent(this, QuestionsActivity::class.java)
                 .putExtra(Keys.TEST, test)
-                .putExtra(Keys.INDEX, position), 0
+                .putExtra(Keys.INDEX, position), REQUEST_QUESTIONS
         )
         return true
     }

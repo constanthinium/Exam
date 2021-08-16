@@ -1,15 +1,13 @@
 package ru.kostyadzyuba.exam
 
-import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
@@ -17,7 +15,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.datepicker.MaterialDatePicker
 
 class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterface.OnClickListener,
     TextView.OnEditorActionListener {
@@ -27,17 +24,20 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
     private lateinit var vibrator: Vibrator
     private lateinit var vibration: VibrationEffect
     private lateinit var questionTextView: TextView
+    private lateinit var testName: String
 
     private lateinit var correctPlayer: MediaPlayer
     private lateinit var incorrectPlayer: MediaPlayer
 
     private var currentQuestionIndex = 0
     private var score = 0
+    private val incorrectQuestions = ArrayList<QuestionAndAnswer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pass_test)
         val extras = intent.extras!!
+        testName = extras.getString(Keys.NAME)!!
         questions = extras.getSerializable(Keys.QUESTIONS) as ArrayList<QuestionAndAnswer>
         questions.shuffle()
         questionTextView = findViewById(R.id.question)
@@ -52,15 +52,17 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
     }
 
     override fun onClick(v: View?) {
+        val currentQuestion = questions[currentQuestionIndex]
         Toast.makeText(
             this,
             if (answerEditText.text.toString()
-                    .equals(questions[currentQuestionIndex].answer, true)
+                    .equals(currentQuestion.answer, true)
             ) {
                 score++
                 correctPlayer.start()
                 "Answer is correct!"
             } else {
+                incorrectQuestions.add(currentQuestion)
                 incorrectPlayer.start()
                 "Answer is incorrect!"
             },
@@ -72,16 +74,24 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
         if (++currentQuestionIndex != questions.size) {
             questionTextView.text = questions[currentQuestionIndex].question
         } else {
-            AlertDialog.Builder(this)
+            val dialog = AlertDialog.Builder(this)
                 .setTitle("Test passed!")
                 .setMessage("Score: ${score}/${questions.size}")
-                .setPositiveButton("OK", this)
+                .setNegativeButton("Back", this)
                 .setCancelable(false)
-                .show()
+            if (score != questions.size) {
+                dialog.setPositiveButton("Error correction", this)
+            }
+            dialog.show()
         }
     }
 
     override fun onClick(dialog: DialogInterface?, which: Int) {
+        if (which == DialogInterface.BUTTON_POSITIVE) {
+            setResult(RESULT_OK, Intent()
+                .putExtra(Keys.NAME, testName)
+                .putExtra(Keys.QUESTIONS, incorrectQuestions))
+        }
         finish()
     }
 
