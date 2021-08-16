@@ -4,12 +4,14 @@ import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.marginTop
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
+
     private lateinit var questionsAdapter: QuestionsAdapter
     private lateinit var save: FloatingActionButton
     private var currentTest: Test? = null
@@ -37,13 +39,17 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.save -> {
                 currentFocus?.clearFocus()
-                val intent = Intent()
-                    .putExtra(Keys.QUESTIONS, questionsAdapter.questions)
-                intent.extras?.let {
-                    intent.putExtra(Keys.INDEX, it.getInt(Keys.INDEX))
+                if (questionsAdapter.questions.any { it.question.isBlank() || it.answer.isBlank() }) {
+                    Toast.makeText(this, "All fields must be filled in.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val resultIntent = Intent()
+                        .putExtra(Keys.QUESTIONS, questionsAdapter.questions)
+                    intent.extras?.let {
+                        resultIntent.putExtra(Keys.INDEX, it.getInt(Keys.INDEX))
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
                 }
-                setResult(RESULT_OK, intent)
-                finish()
             }
             else -> throw IllegalArgumentException("View.id")
         }
