@@ -168,16 +168,14 @@ class TestsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener
             else -> {
                 val test = testsAdapter.tests[recyclerView.getChildAdapterPosition(view)]
                 startActivityForResult(
-                    Intent(packageContext, PassTestActivity::class.java)
-                        .putExtra(Keys.NAME, test.name)
-                        .putExtra(Keys.QUESTIONS, test.questions), REQUEST_PASS
+                    PassTestActivity.newIntent(packageContext, test), REQUEST_PASS
                 )
             }
         }
     }
 
     override fun onClick(dialog: DialogInterface, which: Int) {
-        startActivityForResult(Intent(packageContext, QuestionsActivity::class.java), REQUEST_QUESTIONS)
+        startActivityForResult(QuestionsActivity.newIntent(packageContext), REQUEST_QUESTIONS)
     }
 
     override fun onShow(dialog: DialogInterface) {
@@ -192,8 +190,8 @@ class TestsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener
             data as Intent
             if (requestCode == REQUEST_QUESTIONS) {
                 val questions =
-                    data.getSerializableExtra(Keys.QUESTIONS)!! as ArrayList<QuestionAndAnswer>
-                val testIndex = data.getIntExtra(Keys.INDEX, -1)
+                    data.getSerializableExtra(ResultExtras.QUESTIONS)!! as ArrayList<QuestionAndAnswer>
+                val testIndex = data.getIntExtra(ResultExtras.INDEX, -1)
                 if (testIndex == -1) {
                     testsAdapter.tests.add(Test(testNameText.text.toString(), questions))
                     testsAdapter.notifyItemInserted(testsAdapter.itemCount - 1)
@@ -204,8 +202,8 @@ class TestsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener
             } else if (requestCode == REQUEST_PASS) {
                 testsAdapter.tests.add(
                     Test(
-                        "Error correction: ${data.getStringExtra(Keys.NAME)}",
-                        data.getSerializableExtra(Keys.QUESTIONS) as ArrayList<QuestionAndAnswer>
+                        "Error correction: ${data.getStringExtra(ResultExtras.NAME)}",
+                        data.getSerializableExtra(ResultExtras.QUESTIONS) as ArrayList<QuestionAndAnswer>
                     )
                 )
             }
@@ -217,9 +215,8 @@ class TestsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener
         val position = recyclerView.getChildAdapterPosition(view)
         val test = testsAdapter.tests[position]
         startActivityForResult(
-            Intent(packageContext, QuestionsActivity::class.java)
-                .putExtra(Keys.TEST, test)
-                .putExtra(Keys.INDEX, position), REQUEST_QUESTIONS
+            QuestionsActivity.newIntent(packageContext, position, test),
+            REQUEST_QUESTIONS
         )
         return true
     }

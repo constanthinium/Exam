@@ -1,5 +1,6 @@
 package ru.kostyadzyuba.exam
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.media.MediaPlayer
@@ -15,16 +16,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+
+private const val EXTRA_TEST = "test"
 
 class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterface.OnClickListener,
     TextView.OnEditorActionListener, DialogInterface.OnCancelListener {
 
-    private lateinit var questions: ArrayList<QuestionAndAnswer>
+    private lateinit var test: Test
     private lateinit var answerEditText: EditText
     private lateinit var vibrator: Vibrator
     private lateinit var questionTextView: TextView
-    private lateinit var testName: String
 
     private lateinit var correctPlayer: MediaPlayer
     private lateinit var incorrectPlayer: MediaPlayer
@@ -39,12 +40,10 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pass_test)
-        val extras = intent.extras!!
-        testName = extras.getString(Keys.NAME)!!
-        questions = extras.getSerializable(Keys.QUESTIONS) as ArrayList<QuestionAndAnswer>
-        questions.shuffle()
+        test = intent.getSerializableExtra(EXTRA_TEST) as Test
+        test.questions.shuffle()
         questionTextView = findViewById(R.id.question)
-        questionTextView.text = questions[currentQuestionIndex].question
+        questionTextView.text = test.questions[currentQuestionIndex].question
         findViewById<ImageButton>(R.id.done).setOnClickListener(this)
         answerEditText = findViewById(R.id.answer)
         answerEditText.setOnEditorActionListener(this)
@@ -56,7 +55,7 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
     }
 
     override fun onClick(v: View?) {
-        val currentQuestion = questions[currentQuestionIndex]
+        val currentQuestion = test.questions[currentQuestionIndex]
         Toast.makeText(
             this,
             if (answerEditText.text.toString()
@@ -76,15 +75,15 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
         ).show()
         answerEditText.text.clear()
 
-        if (++currentQuestionIndex != questions.size) {
-            questionTextView.text = questions[currentQuestionIndex].question
+        if (++currentQuestionIndex != test.questions.size) {
+            questionTextView.text = test.questions[currentQuestionIndex].question
         } else {
             val dialog = AlertDialog.Builder(this)
                 .setTitle("Test passed!")
-                .setMessage("Score: ${score}/${questions.size}")
+                .setMessage("Score: ${score}/${test.questions.size}")
                 .setNegativeButton("Back", this)
                 .setOnCancelListener(this)
-            if (score != questions.size) {
+            if (score != test.questions.size) {
                 dialog.setPositiveButton("Error correction", this)
             }
             dialog.show()
@@ -95,8 +94,8 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
         if (which == DialogInterface.BUTTON_POSITIVE) {
             setResult(
                 RESULT_OK, Intent()
-                    .putExtra(Keys.NAME, testName)
-                    .putExtra(Keys.QUESTIONS, incorrectQuestions)
+                    .putExtra(ResultExtras.NAME, test.name)
+                    .putExtra(ResultExtras.QUESTIONS, incorrectQuestions)
             )
         }
         finish()
@@ -113,5 +112,12 @@ class PassTestActivity : AppCompatActivity(), View.OnClickListener, DialogInterf
 
     override fun onCancel(dialog: DialogInterface?) {
         finish()
+    }
+
+    companion object {
+        fun newIntent(context: Context, test: Test): Intent {
+            return Intent(context, PassTestActivity::class.java)
+                .putExtra(EXTRA_TEST, test)
+        }
     }
 }

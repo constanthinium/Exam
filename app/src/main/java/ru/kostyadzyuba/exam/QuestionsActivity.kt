@@ -1,6 +1,7 @@
 package ru.kostyadzyuba.exam
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -10,19 +11,19 @@ import androidx.core.view.marginTop
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
+private const val EXTRA_INDEX = "index"
+private const val EXTRA_TEST = "test"
+
 class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var questionsAdapter: QuestionsAdapter
     private lateinit var save: FloatingActionButton
-    private var currentTest: Test? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_questions)
-        questionsAdapter = intent.extras?.let {
-            currentTest = it.getSerializable(Keys.TEST) as Test
-            QuestionsAdapter(currentTest!!.questions)
-        } ?: QuestionsAdapter(ArrayList())
+        questionsAdapter = QuestionsAdapter(intent.getSerializableExtra(EXTRA_TEST)
+            ?.let { (it as Test).questions } ?: ArrayList())
         findViewById<RecyclerView>(R.id.questions).adapter = questionsAdapter
         findViewById<FloatingActionButton>(R.id.add).setOnClickListener(this)
         save = findViewById(R.id.save)
@@ -43,15 +44,25 @@ class QuestionsActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.makeText(this, "All fields must be filled in.", Toast.LENGTH_SHORT).show()
                 } else {
                     val resultIntent = Intent()
-                        .putExtra(Keys.QUESTIONS, questionsAdapter.questions)
-                    intent.extras?.let {
-                        resultIntent.putExtra(Keys.INDEX, it.getInt(Keys.INDEX))
-                    }
+                        .putExtra(ResultExtras.QUESTIONS, questionsAdapter.questions)
+                        .putExtra(ResultExtras.INDEX, intent.getIntExtra(ResultExtras.INDEX, -1))
                     setResult(RESULT_OK, resultIntent)
                     finish()
                 }
             }
             else -> throw IllegalArgumentException("View.id")
+        }
+    }
+
+    companion object {
+        fun newIntent(context: Context): Intent {
+            return Intent(context, QuestionsActivity::class.java)
+        }
+
+        fun newIntent(context: Context, index: Int, test: Test): Intent {
+            return newIntent(context)
+                .putExtra(EXTRA_INDEX, index)
+                .putExtra(EXTRA_TEST, test)
         }
     }
 }
