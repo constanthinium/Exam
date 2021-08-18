@@ -1,4 +1,4 @@
-package ru.kostyadzyuba.exam
+package com.constanthinium.exam
 
 object ResultExtras {
     const val QUESTIONS = "questions"

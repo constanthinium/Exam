@@ -7,7 +7,7 @@ android {
     compileSdk 30
 
     defaultConfig {
-        applicationId "ru.kostyadzyuba.exam"
+        applicationId "com.constanthinium.exam"
         minSdk 28
         targetSdk 30
         versionCode 1

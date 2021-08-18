@@ -1,4 +1,4 @@
-package ru.kostyadzyuba.exam
+package com.constanthinium.exam
 
 import android.animation.ObjectAnimator
 import android.content.Context
